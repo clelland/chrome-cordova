@@ -5,6 +5,11 @@
 var Event = require('chrome.common.events');
 var mobile = require('chrome.mobile.impl');
 
+var jQueryPresent = false;
+if (typeof(window.jQuery) != "undefined") {
+    jQueryPresent = true;
+}
+
 // The AppWindow created by chrome.app.window.create.
 var createdAppWindow = null;
 var dummyNode = document.createElement('a');
@@ -63,6 +68,10 @@ function evalScripts(rootNode, afterFunc) {
   var scripts = Array.prototype.slice.call(rootNode.getElementsByTagName('script'));
   var doc = rootNode.ownerDocument;
   function helper() {
+if (!jQueryPresent && typeof(window.jQuery) != "undefined") {
+    jQueryPresent = true;
+    window.jQuery.holdReady && window.jQuery.holdReady(true);
+}
     var script = scripts.shift();
     if (!script) {
       afterFunc && afterFunc();
@@ -104,6 +113,7 @@ function rewritePage(pageContent, filePath) {
       evalScripts(fgBody, function() {
         cordova.fireWindowEvent('DOMContentReady');
         cordova.fireWindowEvent('load');
+        window.jQuery.holdReady && window.jQuery.holdReady(false);
       })
     });
   }
